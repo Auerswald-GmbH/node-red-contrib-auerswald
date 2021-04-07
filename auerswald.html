@@ -1,0 +1,387 @@
+<script type="text/javascript">
+    RED.nodes.registerType('auerswald-pbx-connect', {
+        category: 'config',
+        defaults: {
+            cname: {value: '', required: false},
+            ip: {value: '192.168.0.240', required: true},
+            port: {value: 443, required: true, validate: RED.validators.number()},
+        },
+		credentials: {
+        	user: {type:'text'},
+			pass: {type:'password'}
+     	},
+        label: function() {
+            if (this.cname.length) {
+                return this.cname + ' (' + this.ip + ':' + this.port + ')'
+			}
+            return this.ip + ':' + this.port
+        }
+    });
+
+</script>
+
+<script type="text/x-red" data-template-name="auerswald-pbx-connect">
+    <div class="form-row">
+        <label for="node-config-input-cname"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-cname">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-ip"><i class="fa fa-server"></i> IP</label>
+        <input type="text" id="node-config-input-ip">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-port"><i class="fa fa-server"></i> HTTPS-Port</label>
+        <input type="text" id="node-config-input-port">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-user"><i class="fa fa-server"></i> Username</label>
+        <input type="text" id="node-config-input-user">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-pass"><i class="fa fa-key"></i> Password</label>
+        <input type="password" id="node-config-input-pass">
+    </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('auerswald', {
+        category: 'Auerswald',
+        color: '#3da6d4',
+        paletteLabel: 'Auerswald',
+		defaults: {
+            nname: {value: ''},
+            pbx: {type: 'auerswald-pbx-connect', required: true},
+            request: {value: ''},
+            param0: {value: ''},
+            param1: {value: ''},
+            param2: {value: ''},
+            param3: {value: ''},
+            param4: {value: ''},
+            param5: {value: ''},
+            param6: {value: ''},
+			sendDebugInfo: {value: ''}
+        },
+        inputs: 1,
+        outputs: 2,
+        outputLabels: ['stdout', 'binary'],
+        icon: 'auerswald.png',
+        label: function() {
+            return this.nname || 'Auerswald API'
+        },
+        oneditprepare: function() {
+            let node = this
+			let context = []
+
+			$.get('auerswald/requestlist', {})
+			.done(function(requestList) {
+			    function showHideParameter(select) {
+			        // wenn noch keine Zugangsdaten hinterlegt sind -> ausblenden
+					if ($('#node-input-pbx')[0].options.length === 1) {
+					    select.parent().hide()
+						return
+					}
+					const data = context[select[0].id + '_options']
+                    const value = context[select[0].id + '_values']
+
+                    for (let d = 0; d < data.length; d++) {
+                        if (data[d][value] && data[d][value].toString() === select.val().toString()) {
+                            if (typeof(data[d].show) === 'string') {
+                                $('#node-input-' + data[d].show).parent().show()
+                            } else if (typeof(data[d].show) === 'object') {
+                                for (let h = 0; h < data[d].show.length; h++) {
+                                    $('#node-input-' + data[d].show[h]).parent().show()
+                                }
+                            }
+                            if (typeof(data[d].hide) === 'string') {
+                                $('#node-input-' + data[d].hide).parent().hide()
+                            } else if (typeof(data[d].hide) === 'object') {
+                                for (let h = 0; h < data[d].hide.length; h++) {
+                                    $('#node-input-' + data[d].hide[h]).parent().hide()
+								}
+                            }
+                            break
+                        }
+                    }
+				}
+
+                function createSelect(input, data, p) {
+                    // create select, set input type to hidden
+                    const parent = input.parent()
+                    input.prop('type', 'hidden')
+                    const id = input[0].id.replace('node-input', 'select')
+                    let select = $('<select id="' + id + '" style="width: 70%"></select>')
+                    parent.append(select)
+                    let optgroup = $('<optgroup label="From list"></optgroup>')
+                    if (data.length) {
+                        context[id + '_options'] = data
+                        context[id + '_values'] = p.options.valueField
+                        select.append(optgroup)
+                        for (d = 0; d < data.length; d++) {
+							let text = p.options && p.options.pattern ? p.options.pattern : p.options.textField
+                            if (typeof(p.options.textField) == 'object' && p.options.pattern) {
+                                for (t = 0; t < p.options.textField.length; t++) {
+                                    // ToDo Optimization ;)
+                                    let value = data[d][p.options.textField[t]]
+                                    if (p.options && p.options.replaceValue && p.options.replaceValue[t]) {
+                                        const replaceList = requestList.static[p.options.replaceValue[t]]
+                                        for (r = 0; r < replaceList.length; r++) {
+                                            if (replaceList[r].value == value) {
+                                                value = replaceList[r].text
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    text = text.replace('%s', value)
+                                }
+                            } else {
+                                text = data[d][text]
+                            }
+                            const option = '<option value="' + data[d][p.options.valueField] + '">' + text +
+                                    '</option>'
+                            optgroup.append(option)
+                        }
+                    }
+                    // helpParam can not be send in msg.topic
+                    if (p.name != 'helpParam') {
+                        optgroup = $('<optgroup label="From incoming msg"></optgroup>')
+                        optgroup.append('<option value="-1">use msg.topic.' + p.name + '</option>')
+                        select.append(optgroup)
+                    }
+                    // set input to first select option if empty
+					if (!input.val()) {
+					    input.val(select[0].options[0].value)
+					}
+                    // set select value if input value is set
+                    if (input.val() && input.val().length) {
+                        select.val(input.val())
+                    }
+                    // change input value on select change
+                    select.change(function () {
+						showHideParameter(select)
+                        input.val(select.val())
+                    })
+                }
+
+                function showParamDetail(currentRequest, init) {
+                    node.currentRequest = requestList.requests[currentRequest]
+                    // init -> hide params, required field hint, remove selects, reset input to text
+                    $('.param').hide()
+                    $('.param').find('select').remove()
+                    $('.param').find('input').prop('type', 'text')
+					// show a hint for requests that need special privileges
+                    $('#node-input-admin').hide()
+					if (node.currentRequest && node.currentRequest.access === 'admin') {
+                        $('#node-input-admin').show()
+					}
+					// some requests are user specific and need to be executed with user rights
+                    $('#node-input-user').hide()
+                    if (node.currentRequest && node.currentRequest.access === 'user') {
+                        $('#node-input-user').show()
+                    }
+					// check for required fields, mark fields with asterisk and show hint
+                    let hasRequiredFields = false
+                    $('#node-input-tips').hide()
+
+                    if (node.currentRequest && node.currentRequest.params) {
+                        for (let x = 0; x < node.currentRequest.params.length; x++) {
+                            const p = node.currentRequest.params[x]
+                            let input = $('#node-input-param' + x)
+                            let label = '<i class="fa fa-wrench"></i> ' + (p.display || p.name)
+							// show required field info only for input fields
+                            if (p.required && !p.options) {
+                                label += '<span style="color:red"> *</span>'
+                                hasRequiredFields = true
+                            }
+                            // use existing value when reopening, clear on select change
+							if (!init) {
+                                input.val('')
+                            }
+                            input.prop('type', 'text')
+                            input.prop('placeholder', p.placeholder)
+                            input.prop('pattern', (typeof(p.regex) != 'undefined') ? p.regex : '')
+                            input.prop('required', p.required)
+                            input.prev().html(label)
+                            input.parent().show()
+
+							// get data from given request. input[text] remain if request fails
+							if (p.options && p.options.request) {
+                                $.get('auerswald/request', {apiRequest: p.options.request})
+									.done(function (data) {
+										createSelect(input, JSON.parse(data), p)
+									})
+							// ... or from (static) data lists ...
+                            } else if (p.options) {
+                                p.options.valueField = 'value'
+								p.options.textField = 'text'
+                                data = p.options.static ?
+									   requestList.static[p.options.static] : p.options.data
+                                createSelect(input, data, p)
+							}
+// ToDo Validator, required
+                        }
+
+                        for (let x = 0; x < node.currentRequest.params.length; x++) {
+                            if ($('#select-param' + x).length) {
+                                showHideParameter($('#select-param' + x))
+                            }
+                        }
+                    }
+                    if (hasRequiredFields) {
+                        $('#node-input-tips').show()
+                    }
+                    $('#select-request').val(currentRequest)
+                    $('#node-input-request').val(currentRequest)
+                }
+
+				// create request list
+                $('#node-input-request').prop('type', 'hidden')
+                let select = $('<select id="select-request" style="width: 70%"></select>')
+                $('#node-input-request').parent().append(select)
+                let optgroup = $('<optgroup label="From list"></optgroup>')
+				select.append(optgroup)
+
+                $('#node-input-version').hide()
+				let showVersionHint = false
+				for (let r in requestList.requests) {
+// ToDo translation detail text
+					if (requestList.requests[r].version <= requestList.info.version) {
+                        optgroup.append('<option value="' + r + '">' + r + '</option>')
+                    } else {
+                        showVersionHint = true
+					}
+				}
+                optgroup = $('<optgroup label="From incoming msg"></optgroup>')
+                optgroup.append('<option value="-1">use msg.topic.request</option>')
+                select.append(optgroup)
+
+                select.change(function() {
+                    showParamDetail(select.val(), false)
+                })
+                select.val($('#node-input-request').val() || 'app_about')
+                showParamDetail(select.val(), true)
+
+				if (showVersionHint) {
+                    $('#node-input-version').show()
+				}
+
+                if ($('#node-input-pbx')[0].options.length === 1) {
+                    $('#node-input-pbx').parent().parent().children('a').click()
+                }
+			})
+			.fail(function(res, textStatus, errorThrown) {
+				RED.notify(textStatus, "error")
+			})
+		}
+    })
+</script>
+
+<script type="text/x-red" data-template-name="auerswald">
+	<style type="text/css">
+		input:invalid { color:red }
+		input[required] { background-color: #ffe }
+		input[type=checkbox] { width: auto }
+		.form-tips + .form-tips { margin-top: 5px }
+	</style>
+    <div class="form-row">
+        <label for="node-input-nname"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-nname" placeholder="Name">
+    </div>
+	<div class="form-row">
+    	<label for="node-input-pbx"><i class="fa fa-server"></i> Pbx</label>
+    	<input type="text" id="node-input-pbx">
+	</div>
+    <div class="form-row">
+        <label for="select-request"><i class="fa fa-file"></i> API-Request</label>
+    	<input type="text" id="node-input-request">
+    </div>
+	<div class="form-row param">
+    	<label for="node-input-param0"></label>
+    	<input type="text" id="node-input-param0">
+	</div>
+	<div class="form-row param">
+    	<label for="node-input-param1"></label>
+    	<input type="text" id="node-input-param1">
+	</div>
+	<div class="form-row param">
+    	<label for="node-input-param2"></label>
+    	<input type="text" id="node-input-param2">
+	</div>
+	<div class="form-row param">
+    	<label for="node-input-param3"></label>
+    	<input type="text" id="node-input-param3">
+	</div>
+	<div class="form-row param">
+    	<label for="node-input-param4"></label>
+    	<input type="text" id="node-input-param4">
+	</div>
+	<div class="form-row param">
+    	<label for="node-input-param5"></label>
+    	<input type="text" id="node-input-param5">
+	</div>
+	<div class="form-row param">
+    	<label for="node-input-param6"></label>
+    	<input type="text" id="node-input-param6">
+	</div>
+	<div class="form-row">
+    	<label for="node-input-sendDebugInfo"><i class="fa fa-eye"></i> Debug info</label>
+    	<input type="checkbox" id="node-input-sendDebugInfo">
+	</div>
+
+    <div id="node-input-tips" class="form-tips">
+    	<span style="color:red">*</span> required
+	</div>
+	<div id="node-input-admin" class="form-tips">
+    	This request can not be run with user access
+	</div>
+	<div id="node-input-user" class="form-tips">
+    	This request can only be run with user / sub-admin access
+	</div>
+	<div id="node-input-version" class="form-tips">
+    	The firmware in your Auerswald PBX is outdated. The API-Request list only shows requests
+    	supported by your firmware. Update to Version 7.4 A or newer to get support for full API featureset.
+	</div>
+</script>
+
+<script type="text/x-red" data-help-name="auerswald">
+	<p>Connects to Auerswald PBX COMpact 4000, COMpact 5000(R), COMpact 5200, COMpact 5500(R), COMmander 6000(R)(X) via API</p>
+	<h3>Inputs</h3>
+
+	<h3>Outputs</h3>
+	<ol class="node-ports">
+        <li>Standard output
+            <dl class="message-properties">
+                <dt>payload <span class="property-type">JSON object</span></dt>
+                <dd>the standard output of the request.</dd>
+            	<dt>debug <span class="property-type">JSON object</span></dt>
+                <dd>the debug / error output of the request. Only available if debug info is checked. Content:</dd>
+                <dt>uri <span class="property-type">string</span></dt>
+                <dd>Example: "https://192.168.0.240:443"</dd>
+                <dt>request <span class="property-type">string</span></dt>
+                <dd>Example: "/app_gespr_list"</dd>
+                <dt>parameter <span class="property-type">string</span></dt>
+                <dd>Example: "?offset=50&limit=100"</dd>
+                <dd>parameter is only available if configured in node properties</dd>
+                <dt>cookie <span class="property-type">string</span></dt>
+                <dd>Example: "OIWORRDOHGTNPCX"</dd>
+                <dt>version <span class="property-type">number</span></dt>
+                <dd>Example: 5</dd>
+                <dt>error <span class="property-type">string</span></dt>
+                <dd>Example: "Error: connect EHOSTUNREACH 192.168.0.240:443"</dd>
+                <dd>error is only available if request fails or returns with error statuscode </dd>
+			</dl>
+        </li>
+        <li>data output
+            <dl class="message-properties">
+				Voice-mail (*.wav) and fax messages (*.pdf) can be downloaded from Auerswald PBX. In
+				this case the message is send to the data output to play the message or to save
+				pdf-content to file system.
+			</dl>
+        </li>
+    </ol>
+
+	<h3>Details</h3>
+	<h3>References</h3>
+	<ul>
+    	<li><a href="https://www.auerswald.de/de/service/125-developer-service/950-dev-beschreibung-api-de.html">Auerswald API</a> documentation</li>
+    </ul>
+</script>

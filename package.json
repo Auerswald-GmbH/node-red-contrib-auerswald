@@ -1,0 +1,46 @@
+{
+  "name": "node-red-contrib-auerswald",
+  "version": "1.0.0",
+  "description": "Auerswald API Access (COMpact 4000, 5000(R), 5200(R), 5500R, COMmander 6000(R)(X))",
+  "keywords": [
+    "Auerswald",
+    "FONtevo",
+    "PBX",
+    "COMpact",
+    "COMmander",
+    "4000",
+    "5000",
+    "5200",
+    "5200R",
+    "5500R",
+    "6000",
+    "6000R",
+    "6000RX",
+    "API"
+  ],
+  "main": "auerswald.js",
+  "node-red": {
+    "nodes": {
+      "Auerswald": "auerswald.js"
+    }
+  },
+  "dependencies": {
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0"
+  },
+  "scripts": {
+    "lint": "eslint auerswald.js api-requests.js --fix",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "homepage": "https://github.com/Auerswald-GmbH/node-red-contrib-auerswald",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Auerswald-GmbH/node-red-contrib-auerswald.git"
+  },
+  "author": "Torsten Kühnel",
+  "email": "iot@auerswald.de",
+  "bugs": "ToDo",
+  "license": "MIT"
+}

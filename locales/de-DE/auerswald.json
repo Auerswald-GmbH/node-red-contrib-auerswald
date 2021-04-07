@@ -1,0 +1,36 @@
+{
+    'auerswald': {
+        'app_about': 'Systeminformationen abrufen',
+        'app_call_list': 'Anruferliste abrufen',
+        'app_gespr_list': 'Gesprächsdatenliste abrufen'
+        'app_vmf_box_list': 'Voicemail- / Faxboxliste abrufen'
+        'app_vmf_box_state': 'Voicemail-/Faxbox ein/aus',
+        'app_vmf_msg_list': 'Nachrichtenliste (Voice- und Faxmails) abrufen'
+        'app_set_msg_state': 'Nachrichtenstatus (Voice- und Faxmails) ändern',
+        'app_get_msg': 'Nachrichten (Voice- und Faxmails) download',
+        'app_delete_msg': 'Nachricht (Voice- und Faxmails) löschen',
+        'app_weckzeiten_list': 'Weckzeitenliste abrufen',
+        'app_weckzeiten_set': 'Weckzeit einfügen/ändern/löschen',
+        'app_telefonbuch': 'Telefonbuchliste abrufen',
+        'app_address_categories': 'Telefonbuchkategorien abrufen',
+        'app_konfig_list': 'Liste der Anlagenkonfigurationen abrufen',
+        'app_konfig_get': 'Liste der Anlagenkonfigurationen abrufen',
+        'app_konfig_set': 'Anlagenkonfiguration schalten',
+        'app_vmf_mem_state': 'Speicherübersicht des Voicemail- und Faxsystems abrufen',
+        'app_amt_list': 'Liste der Ämter (externe Anschlüsse) abrufen',
+        'app_ext_ports_status': 'Portübersicht (extern)',
+        'app_msn_aws_list': 'Übersicht MSN-/DDI-Rufumleitung abrufen',
+        'app_msn_aws_set': 'MSN-/DDI-Rufumleitung ein- und ausschalten',
+        'app_group_logstate': 'Status der Gruppenloggzustände',
+        'app_group_logchange': 'Änderung der Gruppenlogzustände',
+        'app_tn_get': 'Teilnehmer-Eigenschaften abrufen',
+        'app_tn_set': 'Teilnehmer-Eigenschaften schalten',
+        'app_pbx_restart': 'Anlagenneustart',
+        'app_relais_list': 'Relaisliste abrufen',
+        'app_relais_set': 'Relais schalten',
+        'app_relais_set_status': 'Status eines Relais setzen',
+        'app_relais_get_status': 'Status eines Relais abrufen',
+        'app_alarm_list': 'Alarmiste abrufen',
+        'app_alarm_set': 'Alarm auslösen'
+    }
+}

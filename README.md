@@ -2,7 +2,7 @@
 
 node-red-contrib-auerswald stellt den Zugriff auf Auerswald-ITK-Systeme (COMpact 4000, 5000(R), 5200(R), 5500R und COMmander 6000(R)(X)) unter Verwendung der von Auerswald unter
 
-https://www.auerswald.de/de/service/125-developer-service/950-dev-beschreibung-api-de.html
+http://wiki.auerswald.de/doku.php?id=en:products:compact-commander-series-_4000-5000-6000:developer_documentation:ict_system_api
 
 bereitgestellten API zur Verfügung.
 

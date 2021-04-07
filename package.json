@@ -16,7 +16,8 @@
     "6000",
     "6000R",
     "6000RX",
-    "API"
+    "API",
+    "node-red"
   ],
   "main": "auerswald.js",
   "node-red": {
@@ -34,13 +35,13 @@
     "lint": "eslint auerswald.js api-requests.js --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://github.com/Auerswald-GmbH/node-red-contrib-auerswald",
+  "homepage": "https://github.com/Auerswald-GmbH/node-red-contrib-auerswald#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/Auerswald-GmbH/node-red-contrib-auerswald.git"
   },
   "author": "Torsten Kühnel",
-  "email": "iot@auerswald.de",
-  "bugs": "ToDo",
+  "email": "developer@auerswald.de",
+  "bugs": "https://github.com/Auerswald-GmbH/node-red-contrib-auerswald/issues",
   "license": "MIT"
 }

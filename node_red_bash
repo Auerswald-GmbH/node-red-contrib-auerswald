@@ -1,3 +1,0 @@
-unset HTTPS_PROXY
-unset https_proxy
-. ~/.bashrc

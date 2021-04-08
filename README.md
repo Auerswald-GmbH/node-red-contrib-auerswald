@@ -1,26 +1,28 @@
-# Beschreibung
+(Deutsche Version siehe unten)
 
-node-red-contrib-auerswald stellt den Zugriff auf Auerswald-ITK-Systeme (COMpact 4000, 5000(R), 5200(R), 5500R und COMmander 6000(R)(X)) unter Verwendung der von Auerswald unter
+---
+# Description
+
+node-red-contrib-auerswald provides access to Auerswald ITC systems (COMpact 4000, 5000(R), 5200(R), 5500R and COMmander 6000(R)(X)) using the API provided by Auerswald under
 
 http://wiki.auerswald.de/doku.php?id=en:products:compact-commander-series-_4000-5000-6000:developer_documentation:ict_system_api
 
-bereitgestellten API zur Verfügung.
 
-## Konfiguration
+## Configuration
 
-Bei der ersten Verwendung müssen Sie die IP-Adresse und den HTTPS-Port des ITK-Systems konfigurieren.
+When using it for the first time, configure the IP address and HTTPS port of the ITC system.
 
-Zusätzlich benötigen Sie die Zugangsdaten des Teilnehmers, für den Sie die Daten über die API abfragen wollen.
+You also need the access data of the subscriber for whom the data is to be queried via the API.
 
-Beachten Sie die Möglichkeit, separate Passwörter für den Zugriff auf Auerswald-ITK-Systeme zu erzeugen:
+You can generate separate access passwords to Auerswald ITC systems:
 
-https://www.auerswald-root.de/download/datei/Developer/COMmander_6000_COMpact_5x00_COMpact_4000/Actionurls_de.pdf
+https://www.auerswald-root.de/download/datei/Developer/COMmander_6000_COMpact_5x00_COMpact_4000/Actionurls_en.pdf
 
-In der Konfiguration können Zugangsdaten für mehrere Teilnehmer hinterlegt werden und für jeden verwendeten Node individuell ausgewählt werden.
+You can store access data for several subscribers in the configuration and select them individually for each node used.
 
-## Verwendung
+## Use
 
-Für jeden Node kann ein API-Request aus der Liste ausgewählt werden. Alternativ kann der Request auch über die eingehende Message definiert werden:
+You can select an API request from the list for each node. Alternatively, you can also define the request using the incoming message:
 
 ```js
 ...
@@ -29,7 +31,59 @@ msg.topic.request = 'app_config_list';
 return msg;
 ```
 
-Beachten Sie, dass der Request gegebenenfalls weitere Parameter benötigt. Diese werden Ihnen angezeigt, wenn Sie den Request im Node unter API-Request aus der Liste auswählen.
+Please note: The request may require additional parameters. These are displayed when you select the request in the node under API request from the list.
+
+```js
+...
+msg.topic = {};
+msg.topic.request = 'app_telefonbuch';
+msg.topic.catId = 1;
+return msg;
+```
+
+
+## Output
+
+Each request delivers a JSON object as msg.payload on the first output (stdout) according to the API documentation.
+
+Voicemail/fax messages, which can be called up with the request app_get_msg, are output as a stream for further processing on the second output (binary).
+
+These can then e.g. be played with the node _play audio_ or _audio out_ (Dashboard) or written as a file.
+
+---
+
+# Beschreibung
+
+node-red-contrib-auerswald stellt den Zugriff auf Auerswald-ITK-Systeme (COMpact 4000, 5000(R), 5200(R), 5500R und COMmander 6000(R)(X)) zur Verfügung unter Verwendung der von Auerswald unter
+
+http://wiki.auerswald.de/doku.php?id=en:products:compact-commander-series-_4000-5000-6000:developer_documentation:ict_system_api
+
+bereitgestellten API.
+
+## Konfiguration
+
+Konfigurieren Sie bei der ersten Verwendung die IP-Adresse und den HTTPS-Port des ITK-Systems.
+
+Sie benötigen zusätzlich die Zugangsdaten des Teilnehmers, für den die Daten über die API abgefragt werden sollen.
+
+Sie können separate Passwörter für den Zugriff auf Auerswald-ITK-Systeme erzeugen:
+
+https://www.auerswald-root.de/download/datei/Developer/COMmander_6000_COMpact_5x00_COMpact_4000/Actionurls_de.pdf
+
+Sie können in der Konfiguration Zugangsdaten für mehrere Teilnehmer hinterlegen und diese für jeden verwendeten Node individuell auswählen.
+
+## Verwendung
+
+Sie können für jeden Node einen API-Request aus der Liste auswählen. Alternativ können Sie den Request auch über die eingehende Message definieren:
+
+```js
+...
+msg.topic = {};
+msg.topic.request = 'app_config_list';
+return msg;
+```
+
+Bitte beachten: Der Request benötigt ggf. weitere Parameter. Diese werden angezeigt, wenn Sie den Request im Node unter API-Request aus der Liste auswählen.
 
 ```js
 ...
@@ -42,10 +96,9 @@ return msg;
 
 ## Ausgabe
 
-Jeder Request liefert am ersten Ausgang (stdout) als msg.payload ein JSON-Objekt entsprechend der API-Dokumentation.
+Jeder Request liefert am ersten Ausgang (stdout) ein JSON-Objekt als msg.payload entsprechend der API-Dokumentation.
 
-Auf Ausgang 2 (binary) werden Voicemail- / Faxnachrichten, die mit dem Request app_get_msg abgerufen werden, als Stream zur weiteren Verarbeitung ausgegeben.
+Auf Ausgang 2 (binary) werden Voicemail-/Faxnachrichten, abrufbar mit dem Request app_get_msg, als Stream zur weiteren Verarbeitung ausgegeben.
 
-Diese können dann z.B. mit dem Node _play audio_ oder _audio out_ (Dashboard) abgespielt werden oder als Datei geschrieben werden
-
+Diese können dann z.B. mit dem Node _play audio_ oder _audio out_ (Dashboard) abgespielt werden oder als Datei geschrieben werden.
 

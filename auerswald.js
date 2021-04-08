@@ -12,7 +12,7 @@ module.exports = function(RED) {
         headers: {
             'Cookie': '',
             'Connection': 'keep-alive',
-            'version': 6
+            'version': 7
         }
     }
 

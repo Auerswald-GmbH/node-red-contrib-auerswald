@@ -1,7 +1,7 @@
 
 module.exports = {
     "info": {
-        "version": 5
+        "version": 7
     },
     "static": {
         "days": [
